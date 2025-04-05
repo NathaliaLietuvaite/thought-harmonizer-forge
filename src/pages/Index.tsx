@@ -7,8 +7,9 @@ import TransformationProcess from '@/components/TransformationProcess';
 import TransformedOutput from '@/components/TransformedOutput';
 import DNAInsights from '@/components/DNAInsights';
 import ExampleSection from '@/components/ExampleSection';
+import NathaliaChatbot from '@/components/NathaliaChatbot';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, MessageSquare, X } from 'lucide-react';
 import { audiences, exampleTransformations } from '@/data/audienceData';
 import { transformThought } from '@/lib/transformationService';
 import { useToast } from '@/components/ui/use-toast';
@@ -19,6 +20,7 @@ const Index = () => {
   const [transformedOutput, setTransformedOutput] = useState('');
   const [isTransforming, setIsTransforming] = useState(false);
   const [showDNAInsights, setShowDNAInsights] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
   const { toast } = useToast();
 
   const handleTransform = async () => {
@@ -82,44 +84,71 @@ const Index = () => {
       <div className="container max-w-4xl pt-12">
         <HeroSection />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ThoughtInput thought={rawThought} setThought={setRawThought} />
-          <AudienceSelector 
-            selectedAudience={selectedAudience} 
-            setSelectedAudience={setSelectedAudience}
-            audiences={audiences}
-          />
-        </div>
-        
-        <div className="mt-2 flex justify-center">
-          <Button 
-            size="lg" 
-            className="relative overflow-hidden group" 
-            onClick={handleTransform}
-            disabled={isTransforming}
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => setShowChatbot(!showChatbot)}
           >
-            <span className="relative z-10 flex items-center gap-2">
-              {isTransforming ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Transforming...</span>
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4" />
-                  <span>Transform Thought</span>
-                </>
-              )}
-            </span>
-            <span className="absolute inset-0 bg-gradient-to-r from-harmony-blue via-harmony-purple to-harmony-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+            {showChatbot ? (
+              <>
+                <X className="w-4 h-4" />
+                <span>Nathalia schließen</span>
+              </>
+            ) : (
+              <>
+                <MessageSquare className="w-4 h-4" />
+                <span>Mit Nathalia chatten</span>
+              </>
+            )}
           </Button>
         </div>
         
-        <TransformationProcess isTransforming={isTransforming} />
-        <TransformedOutput output={transformedOutput} isLoading={isTransforming} />
-        <DNAInsights audience={selectedAudience} visible={showDNAInsights} />
-        
-        <ExampleSection examples={exampleTransformations} onUseExample={handleUseExample} />
+        {showChatbot ? (
+          <NathaliaChatbot />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ThoughtInput thought={rawThought} setThought={setRawThought} />
+              <AudienceSelector 
+                selectedAudience={selectedAudience} 
+                setSelectedAudience={setSelectedAudience}
+                audiences={audiences}
+              />
+            </div>
+            
+            <div className="mt-2 flex justify-center">
+              <Button 
+                size="lg" 
+                className="relative overflow-hidden group" 
+                onClick={handleTransform}
+                disabled={isTransforming}
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  {isTransforming ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Transforming...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4" />
+                      <span>Transform Thought</span>
+                    </>
+                  )}
+                </span>
+                <span className="absolute inset-0 bg-gradient-to-r from-harmony-blue via-harmony-purple to-harmony-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              </Button>
+            </div>
+            
+            <TransformationProcess isTransforming={isTransforming} />
+            <TransformedOutput output={transformedOutput} isLoading={isTransforming} />
+            <DNAInsights audience={selectedAudience} visible={showDNAInsights} />
+            
+            <ExampleSection examples={exampleTransformations} onUseExample={handleUseExample} />
+          </>
+        )}
       </div>
     </div>
   );

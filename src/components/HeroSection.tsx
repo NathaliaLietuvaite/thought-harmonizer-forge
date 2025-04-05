@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Brain, Sparkles } from "lucide-react";
+import { Brain, Sparkles, Bot } from "lucide-react";
 
 const HeroSection: React.FC = () => {
   return (
@@ -9,15 +9,19 @@ const HeroSection: React.FC = () => {
         <div className="p-1.5 bg-primary rounded-full">
           <Brain className="w-5 h-5 text-primary-foreground" />
         </div>
-        <span className="ml-2 mr-1 text-sm font-medium text-primary">Thought Harmonizer Forge with InterfaceDNA</span>
+        <span className="ml-2 mr-1 text-sm font-medium text-primary">Thought Harmonizer Forge mit InterfaceDNA</span>
         <Sparkles className="w-4 h-4 text-primary" />
       </div>
       <h1 className="text-4xl font-bold tracking-tight mb-3 bg-gradient-to-r from-harmony-blue via-harmony-purple to-harmony-teal bg-clip-text text-transparent">
         Transform Your Thoughts
       </h1>
       <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-        Adapt your ideas to resonate with different audiences while preserving their core essence using advanced InterfaceDNA technology.
+        Adaptiere deine Ideen für verschiedene Zielgruppen mit InterfaceDNA Technology und chatte mit Nathalia, deinem KI-Assistenten.
       </p>
+      <div className="flex items-center justify-center mt-2 text-sm text-muted-foreground">
+        <Bot className="w-4 h-4 mr-1 text-harmony-purple" />
+        <span>Nathalia ist bereit, deine Gedanken zu harmonisieren</span>
+      </div>
     </div>
   );
 };

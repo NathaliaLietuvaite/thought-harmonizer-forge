@@ -84,25 +84,34 @@ const Index = () => {
       <div className="container max-w-4xl pt-12">
         <HeroSection />
         
-        <div className="flex justify-end mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-            onClick={() => setShowChatbot(!showChatbot)}
-          >
-            {showChatbot ? (
-              <>
-                <X className="w-4 h-4" />
-                <span>Nathalia schließen</span>
-              </>
-            ) : (
-              <>
-                <MessageSquare className="w-4 h-4" />
-                <span>Mit Nathalia chatten</span>
-              </>
-            )}
-          </Button>
+        {/* Centered chatbot button with image */}
+        <div className="flex justify-center mb-8">
+          <div className="flex items-center gap-4">
+            <img 
+              src="/lovable-uploads/91f3022e-b9e1-4779-921a-4767df6485e2.png" 
+              alt="Nathalia" 
+              className="w-[150px] h-[150px] rounded-full cursor-pointer object-cover border-2 border-harmony-purple shadow-md hover:border-harmony-teal transition-colors duration-300"
+              onClick={() => setShowChatbot(true)}
+            />
+            <Button
+              variant="outline"
+              size="lg"
+              className="flex items-center gap-2 px-6 py-6 border-2 border-harmony-purple hover:border-harmony-teal hover:bg-accent/50 transition-all"
+              onClick={() => setShowChatbot(!showChatbot)}
+            >
+              {showChatbot ? (
+                <>
+                  <X className="w-5 h-5" />
+                  <span className="text-lg">Nathalia schließen</span>
+                </>
+              ) : (
+                <>
+                  <MessageSquare className="w-5 h-5" />
+                  <span className="text-lg">Mit Nathalia chatten</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
         
         {showChatbot ? (

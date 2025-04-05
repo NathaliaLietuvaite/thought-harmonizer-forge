@@ -4,7 +4,7 @@ import { Brain, Sparkles, Bot } from "lucide-react";
 
 const HeroSection: React.FC = () => {
   return (
-    <div className="mb-8 text-center">
+    <div className="mb-12 text-center">
       <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-4">
         <div className="p-1.5 bg-primary rounded-full">
           <Brain className="w-5 h-5 text-primary-foreground" />

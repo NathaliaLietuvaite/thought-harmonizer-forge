@@ -5,6 +5,7 @@ import ThoughtInput from '@/components/ThoughtInput';
 import AudienceSelector from '@/components/AudienceSelector';
 import TransformationProcess from '@/components/TransformationProcess';
 import TransformedOutput from '@/components/TransformedOutput';
+import DNAInsights from '@/components/DNAInsights';
 import ExampleSection from '@/components/ExampleSection';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
@@ -17,6 +18,7 @@ const Index = () => {
   const [selectedAudience, setSelectedAudience] = useState('');
   const [transformedOutput, setTransformedOutput] = useState('');
   const [isTransforming, setIsTransforming] = useState(false);
+  const [showDNAInsights, setShowDNAInsights] = useState(false);
   const { toast } = useToast();
 
   const handleTransform = async () => {
@@ -40,6 +42,7 @@ const Index = () => {
     
     setIsTransforming(true);
     setTransformedOutput('');
+    setShowDNAInsights(false);
     
     try {
       const result = await transformThought({
@@ -48,6 +51,7 @@ const Index = () => {
       });
       
       setTransformedOutput(result);
+      setShowDNAInsights(true);
     } catch (error) {
       console.error('Transformation error:', error);
       toast({
@@ -113,6 +117,7 @@ const Index = () => {
         
         <TransformationProcess isTransforming={isTransforming} />
         <TransformedOutput output={transformedOutput} isLoading={isTransforming} />
+        <DNAInsights audience={selectedAudience} visible={showDNAInsights} />
         
         <ExampleSection examples={exampleTransformations} onUseExample={handleUseExample} />
       </div>

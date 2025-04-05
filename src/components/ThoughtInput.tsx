@@ -27,7 +27,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({ thought, setThought }) => {
         />
         <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
           <Brain className="w-4 h-4" />
-          <span>Your raw thoughts will be transformed according to audience needs</span>
+          <span>Your raw thoughts will be transformed using InterfaceDNA technology to match audience needs</span>
         </div>
       </CardContent>
     </Card>

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				harmony: {
+					'blue': '#2C3E50', 
+					'purple': '#8E44AD',
+					'teal': '#16A085',
+					'light': '#ECF0F1',
+					'dark': '#2C3E50'
 				}
 			},
 			borderRadius: {
@@ -70,25 +78,37 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				'pulse-subtle': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.7' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'ripple': {
+					'0%': { transform: 'scale(0.8)', opacity: '1' },
+					'100%': { transform: 'scale(2)', opacity: '0' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite',
+				'float': 'float 6s ease-in-out infinite',
+				'ripple': 'ripple 1.5s linear infinite'
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-dots': 'radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px)',
+				'gradient-thought': 'linear-gradient(135deg, #2C3E50 0%, #8E44AD 100%)'
 			}
 		}
 	},

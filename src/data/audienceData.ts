@@ -35,27 +35,27 @@ export const audiences: Audience[] = [
 
 export const exampleTransformations = [
   {
-    thought: "Nachtarbeit als Reinigungskraft, um morgens für meine Tochter da zu sein – Systemversagen.",
+    thought: "Climate protection and economic growth as an apparent contradiction.",
     audience: "Ethicists"
   },
   {
-    thought: "Klimaschutz und wirtschaftliches Wachstum als scheinbarer Widerspruch.",
+    thought: "Digital surveillance in the name of security - a dangerous development.",
     audience: "Pragmatists"
   },
   {
-    thought: "Digitale Überwachung im Namen der Sicherheit – eine gefährliche Entwicklung.",
+    thought: "Educational opportunities still depend too much on social background.",
     audience: "Academics"
   },
   {
-    thought: "Bildungschancen hängen immer noch zu stark von sozialer Herkunft ab.",
+    thought: "Artificial intelligence is changing our understanding of creativity and work.",
     audience: "Activists"
   },
   {
-    thought: "Künstliche Intelligenz verändert unser Verständnis von Kreativität und Arbeit.",
+    thought: "Public transportation must be understood as a basic right.",
     audience: "Technologists"
   },
   {
-    thought: "Der öffentliche Nahverkehr muss als Grundrecht verstanden werden.",
+    thought: "The gap between rich and poor continues to widen in modern societies.",
     audience: "Ethicists"
   }
 ];

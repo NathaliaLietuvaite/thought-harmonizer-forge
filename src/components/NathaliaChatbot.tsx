@@ -3,14 +3,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Send, Bot, User } from "lucide-react";
+import { MessageSquare, Send, Bot, User, AlertTriangle } from "lucide-react";
 import { transformThought } from '@/lib/transformationService';
 import { useToast } from "@/components/ui/use-toast";
+import { generateResponse, initializeWebLLM, checkWebGPUSupport } from '@/lib/webLLMService';
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
@@ -19,13 +19,63 @@ const NathaliaChatbot: React.FC = () => {
     {
       id: '1',
       role: 'assistant',
-      content: 'Hallo! Ich bin Nathalia, dein Gedanken-Harmonisierungs-Assistent. Wie kann ich dir heute helfen?'
+      content: 'Hello! I am Nathalia, your thought harmonization assistant. How can I help you today?'
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [modelStatus, setModelStatus] = useState<{loading: boolean, error: string | null}>({
+    loading: true,
+    error: null
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Initialize WebLLM when component mounts
+  useEffect(() => {
+    async function loadModel() {
+      setModelStatus({loading: true, error: null});
+      
+      try {
+        // Check WebGPU support
+        const gpuSupport = await checkWebGPUSupport();
+        if (!gpuSupport.supported) {
+          // Add a system message about WebGPU support
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            role: 'system',
+            content: gpuSupport.message
+          }]);
+        }
+        
+        // Initialize the model
+        await initializeWebLLM();
+        setModelStatus({loading: false, error: null});
+        
+        // Add a system message that the model is ready
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: 'system',
+          content: 'The TinyLlama model is loaded and ready. Note that this is a small model running in your browser, so responses may be simpler than commercial AI services.'
+        }]);
+      } catch (error) {
+        console.error('Error loading WebLLM model:', error);
+        setModelStatus({
+          loading: false, 
+          error: 'Failed to load the AI model. Falling back to simulated responses.'
+        });
+        
+        // Add error message
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: 'system',
+          content: `Error: Failed to load the AI model. Falling back to simulated responses. ${error}`
+        }]);
+      }
+    }
+    
+    loadModel();
+  }, []);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
@@ -47,29 +97,26 @@ const NathaliaChatbot: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Generate response using the transformation service (simulating chatbot)
-      const response = await transformThought({
-        thought: inputValue,
-        audience: 'ethiker' // Default audience for chatbot
-      });
+      // Generate response using WebLLM (or fallback to mock)
+      const response = await generateResponse(inputValue, 'ethiker');
       
       // Add assistant response
       setTimeout(() => {
         const botResponse: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: `${response}\n\nDieser Gedanke berührt Aspekte der Würde im Systemwandel.`
+          content: response
         };
         
         setMessages(prev => [...prev, botResponse]);
         setIsProcessing(false);
-      }, 1000); // Simulate processing time
+      }, 300); // Reduced delay for better UX
       
     } catch (error) {
       console.error('Error processing message:', error);
       toast({
-        title: 'Fehler bei der Verarbeitung',
-        description: 'Entschuldigung, ich konnte deine Nachricht nicht verarbeiten.',
+        title: 'Error processing message',
+        description: 'Sorry, I could not process your message.',
         variant: 'destructive',
       });
       setIsProcessing(false);
@@ -89,6 +136,18 @@ const NathaliaChatbot: React.FC = () => {
         <CardTitle className="flex items-center gap-2 text-xl">
           <Bot className="w-5 h-5 text-harmony-purple" />
           <span>Nathalia Chatbot</span>
+          {modelStatus.loading && (
+            <div className="ml-auto text-xs flex items-center gap-1 text-amber-500">
+              <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></div>
+              <span>Loading Model...</span>
+            </div>
+          )}
+          {modelStatus.error && (
+            <div className="ml-auto text-xs flex items-center gap-1 text-red-500">
+              <AlertTriangle className="w-3 h-3" />
+              <span>Model Error</span>
+            </div>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col h-full p-0">
@@ -96,28 +155,38 @@ const NathaliaChatbot: React.FC = () => {
           {messages.map((message) => (
             <div 
               key={message.id} 
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${
+                message.role === 'user' 
+                  ? 'justify-end' 
+                  : message.role === 'system' 
+                    ? 'justify-center' 
+                    : 'justify-start'
+              }`}
             >
               <div 
                 className={`max-w-[80%] p-3 rounded-lg ${
                   message.role === 'user' 
                     ? 'bg-primary text-primary-foreground ml-auto'
+                    : message.role === 'system'
+                    ? 'bg-amber-100 text-amber-800 text-xs px-2 py-1'
                     : 'bg-muted'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  {message.role === 'user' ? (
-                    <>
-                      <span className="font-medium">Du</span>
-                      <User className="w-4 h-4" />
-                    </>
-                  ) : (
-                    <>
-                      <span className="font-medium">Nathalia</span>
-                      <Bot className="w-4 h-4" />
-                    </>
-                  )}
-                </div>
+                {message.role !== 'system' && (
+                  <div className="flex items-center gap-2 mb-1">
+                    {message.role === 'user' ? (
+                      <>
+                        <span className="font-medium">You</span>
+                        <User className="w-4 h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-medium">Nathalia</span>
+                        <Bot className="w-4 h-4" />
+                      </>
+                    )}
+                  </div>
+                )}
                 <div className="whitespace-pre-wrap">{message.content}</div>
               </div>
             </div>
@@ -152,14 +221,14 @@ const NathaliaChatbot: React.FC = () => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Teile deine Gedanken mit Nathalia..."
-              disabled={isProcessing}
+              placeholder="Share your thoughts with Nathalia..."
+              disabled={isProcessing || modelStatus.loading}
               className="flex-1"
             />
             <Button 
               type="submit" 
               size="icon" 
-              disabled={isProcessing}
+              disabled={isProcessing || modelStatus.loading}
               className="bg-harmony-purple hover:bg-harmony-purple/90"
             >
               <Send className="h-4 w-4" />

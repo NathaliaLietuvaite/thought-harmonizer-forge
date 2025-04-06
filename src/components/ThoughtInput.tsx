@@ -20,7 +20,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({ thought, setThought }) => {
       </CardHeader>
       <CardContent>
         <Textarea
-          placeholder="Enter your thought here... (e.g., 'Climate protection and economic growth as an apparent contradiction.')"
+          placeholder="Enter your thought here... (e.g., 'I am beautiful!' or 'AI will change how we create art.')"
           className="min-h-[120px] resize-y text-base"
           value={thought}
           onChange={(e) => setThought(e.target.value)}

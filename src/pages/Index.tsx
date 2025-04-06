@@ -8,8 +8,9 @@ import TransformedOutput from '@/components/TransformedOutput';
 import DNAInsights from '@/components/DNAInsights';
 import ExampleSection from '@/components/ExampleSection';
 import NathaliaChatbot from '@/components/NathaliaChatbot';
+import CollaboratorList from '@/components/CollaboratorList';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, MessageSquare, X } from 'lucide-react';
+import { RefreshCw, MessageSquare, X, Users } from 'lucide-react';
 import { audiences, exampleTransformations } from '@/data/audienceData';
 import { transformThought } from '@/lib/transformationService';
 import { useToast } from '@/components/ui/use-toast';
@@ -21,6 +22,7 @@ const Index = () => {
   const [isTransforming, setIsTransforming] = useState(false);
   const [showDNAInsights, setShowDNAInsights] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
+  const [showCollaborators, setShowCollaborators] = useState(false);
   const { toast } = useToast();
 
   const handleTransform = async () => {
@@ -113,6 +115,26 @@ const Index = () => {
             </Button>
           </div>
         </div>
+        
+        {/* Collaboration toggle button */}
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => setShowCollaborators(!showCollaborators)}
+          >
+            <Users className="w-4 h-4" />
+            <span>{showCollaborators ? 'Kollaboration ausblenden' : 'Kollaboration anzeigen'}</span>
+          </Button>
+        </div>
+        
+        {/* Show collaborator list if enabled */}
+        {showCollaborators && (
+          <div className="mb-6">
+            <CollaboratorList />
+          </div>
+        )}
         
         {showChatbot ? (
           <NathaliaChatbot />

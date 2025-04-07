@@ -5,9 +5,9 @@ import { pipeline, env } from '@huggingface/transformers';
 env.useBrowserCache = true;
 env.allowLocalModels = false;
 
-// Model configurations - using models that are known to work with transformers.js
-const TEXT_GENERATION_MODEL = "Xenova/tiny-random-gpt2";  // Change to a model known to work in browser
-const FALLBACK_MODEL = "Xenova/tiny-random-gpt2";  // Same model as fallback
+// Model configurations - using publicly accessible models that don't require authentication
+const TEXT_GENERATION_MODEL = "Xenova/gpt2-tiny";  // Use Xenova's version which is set up for public access
+const FALLBACK_MODEL = "Xenova/gpt2-tiny";  // Same model as fallback
 
 // Types
 type AudienceType = 'ethiker' | 'pragmatiker' | 'akademiker' | 'aktivisten' | 'technologen';

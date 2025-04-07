@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { MessageSquare, Send, Bot, User, AlertTriangle } from "lucide-react";
 import { transformThought } from '@/lib/transformationService';
 import { useToast } from "@/components/ui/use-toast";
 import { generateResponse, initializeWebLLM, checkWebGPUSupport } from '@/lib/webLLMService';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface Message {
   id: string;
@@ -70,7 +72,7 @@ const NathaliaChatbot: React.FC = () => {
         setMessages(prev => [...prev, {
           id: Date.now().toString(),
           role: 'system',
-          content: `Error: Failed to load the AI model. Falling back to simulated responses. ${errorMessage}`
+          content: `Error loading AI model: ${errorMessage}. Using fallback responses instead.`
         }]);
       }
     }
@@ -103,7 +105,7 @@ const NathaliaChatbot: React.FC = () => {
       // Check if model is available, otherwise use a fallback
       if (modelStatus.error) {
         // Use fallback responses if model failed to load
-        response = `I'm currently running in fallback mode due to model loading issues. In response to "${inputValue}", I would typically provide a thoughtful reply about ${getRandomTopic()}.`;
+        response = `I'm currently running in fallback mode. In response to "${inputValue}", I would normally provide a thoughtful reply about ${getRandomTopic()}.`;
       } else {
         // Generate response using WebLLM
         response = await generateResponse(inputValue, 'ethiker');
@@ -165,7 +167,7 @@ const NathaliaChatbot: React.FC = () => {
           {modelStatus.error && (
             <div className="ml-auto text-xs flex items-center gap-1 text-red-500">
               <AlertTriangle className="w-3 h-3" />
-              <span>Model Error - Using Fallback</span>
+              <span>Using Fallback Mode</span>
             </div>
           )}
         </CardTitle>

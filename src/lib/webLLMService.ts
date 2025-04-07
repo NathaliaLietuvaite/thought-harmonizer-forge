@@ -39,18 +39,20 @@ export async function initializeWebLLM() {
     
     // Try to use WebGPU if available, fall back to CPU
     try {
+      // Remove the quantized property as it's not recognized
       generationPipeline = await pipeline(
         'text-generation',
         TEXT_GENERATION_MODEL,
-        { device: 'webgpu', quantized: true }
+        { device: 'webgpu' }
       );
       console.log("WebLLM initialized with WebGPU");
     } catch (error) {
       console.warn("WebGPU not available, falling back to CPU", error);
+      // Remove the quantized property here as well
       generationPipeline = await pipeline(
         'text-generation',
         FALLBACK_MODEL,
-        { device: 'cpu', quantized: true }
+        { device: 'cpu' }
       );
       console.log("WebLLM initialized with CPU");
     }
@@ -140,7 +142,10 @@ export async function transformThoughtWithLLM(thought: string, audience: Audienc
 
 // Check if WebGPU is available
 export async function checkWebGPUSupport(): Promise<{supported: boolean, message: string}> {
-  if (!navigator.gpu) {
+  // Fix the navigator.gpu TypeScript error by using the 'any' type
+  const nav = navigator as any;
+  
+  if (!nav.gpu) {
     return {
       supported: false,
       message: "WebGPU is not supported in your browser. Using CPU fallback (slower)."
@@ -148,7 +153,7 @@ export async function checkWebGPUSupport(): Promise<{supported: boolean, message
   }
   
   try {
-    const adapter = await navigator.gpu.requestAdapter();
+    const adapter = await nav.gpu.requestAdapter();
     if (!adapter) {
       return {
         supported: false,

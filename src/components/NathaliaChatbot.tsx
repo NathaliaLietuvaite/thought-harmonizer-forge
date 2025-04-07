@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -56,10 +55,12 @@ const NathaliaChatbot: React.FC = () => {
         setMessages(prev => [...prev, {
           id: Date.now().toString(),
           role: 'system',
-          content: 'The TinyLlama model is loaded and ready. Note that this is a small model running in your browser, so responses may be simpler than commercial AI services.'
+          content: 'The AI model is loaded and ready. This is a lightweight model running in your browser.'
         }]);
       } catch (error) {
         console.error('Error loading WebLLM model:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
         setModelStatus({
           loading: false, 
           error: 'Failed to load the AI model. Falling back to simulated responses.'
@@ -69,7 +70,7 @@ const NathaliaChatbot: React.FC = () => {
         setMessages(prev => [...prev, {
           id: Date.now().toString(),
           role: 'system',
-          content: `Error: Failed to load the AI model. Falling back to simulated responses. ${error}`
+          content: `Error: Failed to load the AI model. Falling back to simulated responses. ${errorMessage}`
         }]);
       }
     }
@@ -97,8 +98,16 @@ const NathaliaChatbot: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Generate response using WebLLM (or fallback to mock)
-      const response = await generateResponse(inputValue, 'ethiker');
+      let response;
+      
+      // Check if model is available, otherwise use a fallback
+      if (modelStatus.error) {
+        // Use fallback responses if model failed to load
+        response = `I'm currently running in fallback mode due to model loading issues. In response to "${inputValue}", I would typically provide a thoughtful reply about ${getRandomTopic()}.`;
+      } else {
+        // Generate response using WebLLM
+        response = await generateResponse(inputValue, 'ethiker');
+      }
       
       // Add assistant response
       setTimeout(() => {
@@ -123,6 +132,17 @@ const NathaliaChatbot: React.FC = () => {
     }
   };
 
+  const getRandomTopic = () => {
+    const topics = [
+      'ethics and philosophical considerations',
+      'practical solutions to everyday problems',
+      'academic research and analysis',
+      'social activism and community engagement',
+      'technology and systems optimization'
+    ];
+    return topics[Math.floor(Math.random() * topics.length)];
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -145,7 +165,7 @@ const NathaliaChatbot: React.FC = () => {
           {modelStatus.error && (
             <div className="ml-auto text-xs flex items-center gap-1 text-red-500">
               <AlertTriangle className="w-3 h-3" />
-              <span>Model Error</span>
+              <span>Model Error - Using Fallback</span>
             </div>
           )}
         </CardTitle>

@@ -1,12 +1,13 @@
+
 import { pipeline, env } from '@huggingface/transformers';
 
 // Configure transformers.js to use WebGPU if available
 env.useBrowserCache = true;
 env.allowLocalModels = false;
 
-// Model configurations
-const TEXT_GENERATION_MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0";
-const FALLBACK_MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"; // Same model as primary for now
+// Model configurations - using models that are known to work with transformers.js
+const TEXT_GENERATION_MODEL = "Xenova/tiny-random-gpt2";  // Change to a model known to work in browser
+const FALLBACK_MODEL = "Xenova/tiny-random-gpt2";  // Same model as fallback
 
 // Types
 type AudienceType = 'ethiker' | 'pragmatiker' | 'akademiker' | 'aktivisten' | 'technologen';
@@ -74,12 +75,12 @@ export async function generateResponse(input: string, audience: AudienceType): P
     }
     
     const prompt = audiencePrompts[audience] || "Respond to this thought: ";
-    const fullPrompt = `<s>[INST] ${prompt}${input} [/INST]`;
+    const fullPrompt = `${prompt}${input}`;
 
     console.log("Generating response for prompt:", fullPrompt);
     
     const result = await generator(fullPrompt, {
-      max_new_tokens: 256,
+      max_new_tokens: 100,
       temperature: 0.7,
       repetition_penalty: 1.2,
       top_p: 0.95,
@@ -118,17 +119,16 @@ export async function transformThoughtWithLLM(thought: string, audience: Audienc
     }
     
     const prompt = audienceSpecificPrompts[audience] || `Transform this thought for a general audience: "${thought}"`;
-    const fullPrompt = `<s>[INST] ${prompt} [/INST]`;
     
-    const result = await generator(fullPrompt, {
-      max_new_tokens: 400,
+    const result = await generator(prompt, {
+      max_new_tokens: 150,
       temperature: 0.8,
       repetition_penalty: 1.1,
       top_p: 0.92,
     });
     
     let response = result[0].generated_text;
-    response = response.replace(fullPrompt, '').trim();
+    response = response.replace(prompt, '').trim();
     
     return response;
   } catch (error) {

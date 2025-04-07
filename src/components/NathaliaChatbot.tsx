@@ -25,11 +25,12 @@ const NathaliaChatbot: React.FC = () => {
     {
       id: '2',
       role: 'system',
-      content: 'Using simplified response generation (no AI model required).'
+      content: 'Using enhanced pattern-based responses for natural conversation.'
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [currentAudience, setCurrentAudience] = useState<'ethiker' | 'pragmatiker' | 'akademiker' | 'aktivisten' | 'technologen'>('ethiker');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -53,8 +54,8 @@ const NathaliaChatbot: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Generate response using our pattern-based approach
-      const response = await generateResponse(inputValue, 'ethiker');
+      // Generate response using our enhanced pattern-based approach
+      const response = await generateResponse(inputValue, currentAudience);
       
       // Add assistant response
       setTimeout(() => {
@@ -86,6 +87,31 @@ const NathaliaChatbot: React.FC = () => {
     }
   };
 
+  // Function to handle audience change
+  const handleAudienceChange = (audience: 'ethiker' | 'pragmatiker' | 'akademiker' | 'aktivisten' | 'technologen') => {
+    setCurrentAudience(audience);
+    setMessages(prev => [
+      ...prev, 
+      {
+        id: Date.now().toString(),
+        role: 'system',
+        content: `Switched to ${getAudienceName(audience)} perspective.`
+      }
+    ]);
+  };
+
+  // Helper function to get audience display name
+  const getAudienceName = (audienceId: string): string => {
+    switch(audienceId) {
+      case 'ethiker': return 'Ethicist';
+      case 'pragmatiker': return 'Pragmatist';
+      case 'akademiker': return 'Academic';
+      case 'aktivisten': return 'Activist';
+      case 'technologen': return 'Technologist';
+      default: return audienceId;
+    }
+  };
+
   return (
     <Card className="w-full h-[500px] flex flex-col">
       <CardHeader className="pb-2">
@@ -94,9 +120,24 @@ const NathaliaChatbot: React.FC = () => {
           <span>Nathalia Chatbot</span>
           <div className="ml-auto text-xs flex items-center gap-1 text-blue-500">
             <Info className="w-3 h-3" />
-            <span>Pattern-Based Responses</span>
+            <span>Enhanced Pattern Responses</span>
           </div>
         </CardTitle>
+        
+        {/* Audience selector pills */}
+        <div className="flex flex-wrap gap-2 mt-2">
+          {['ethiker', 'pragmatiker', 'akademiker', 'aktivisten', 'technologen'].map((audience) => (
+            <Button 
+              key={audience}
+              variant={currentAudience === audience ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleAudienceChange(audience as any)}
+              className={currentAudience === audience ? "bg-harmony-purple hover:bg-harmony-purple/90" : ""}
+            >
+              {getAudienceName(audience)}
+            </Button>
+          ))}
+        </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col h-full p-0">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">

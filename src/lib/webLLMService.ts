@@ -1,4 +1,3 @@
-
 import { pipeline, env } from '@huggingface/transformers';
 
 // Configure transformers.js to use WebGPU if available
@@ -37,9 +36,8 @@ export async function initializeWebLLM() {
   try {
     console.log("Initializing WebLLM with model:", TEXT_GENERATION_MODEL);
     
-    // Try to use WebGPU if available, fall back to CPU
+    // Try to use WebGPU if available, fall back to WASM
     try {
-      // Remove the quantized property as it's not recognized
       generationPipeline = await pipeline(
         'text-generation',
         TEXT_GENERATION_MODEL,
@@ -47,14 +45,13 @@ export async function initializeWebLLM() {
       );
       console.log("WebLLM initialized with WebGPU");
     } catch (error) {
-      console.warn("WebGPU not available, falling back to CPU", error);
-      // Remove the quantized property here as well
+      console.warn("WebGPU not available, falling back to WASM", error);
       generationPipeline = await pipeline(
         'text-generation',
         FALLBACK_MODEL,
-        { device: 'cpu' }
+        { device: 'wasm' }
       );
-      console.log("WebLLM initialized with CPU");
+      console.log("WebLLM initialized with WASM");
     }
     
     isModelLoading = false;
@@ -148,7 +145,7 @@ export async function checkWebGPUSupport(): Promise<{supported: boolean, message
   if (!nav.gpu) {
     return {
       supported: false,
-      message: "WebGPU is not supported in your browser. Using CPU fallback (slower)."
+      message: "WebGPU is not supported in your browser. Using WASM fallback (slower)."
     };
   }
   
@@ -157,7 +154,7 @@ export async function checkWebGPUSupport(): Promise<{supported: boolean, message
     if (!adapter) {
       return {
         supported: false,
-        message: "WebGPU adapter not available. Using CPU fallback (slower)."
+        message: "WebGPU adapter not available. Using WASM fallback (slower)."
       };
     }
     return {
@@ -167,7 +164,7 @@ export async function checkWebGPUSupport(): Promise<{supported: boolean, message
   } catch (error) {
     return {
       supported: false,
-      message: "Error checking WebGPU support. Using CPU fallback (slower)."
+      message: "Error checking WebGPU support. Using WASM fallback (slower)."
     };
   }
 }

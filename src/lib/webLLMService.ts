@@ -1,170 +1,97 @@
 
-import { pipeline, env } from '@huggingface/transformers';
-
-// Configure transformers.js to use WebGPU if available
-env.useBrowserCache = true;
-env.allowLocalModels = false;
-
-// Model configurations - using publicly accessible models that don't require authentication
-const TEXT_GENERATION_MODEL = "Xenova/gpt2-tiny";  // Use Xenova's version which is set up for public access
-const FALLBACK_MODEL = "Xenova/gpt2-tiny";  // Same model as fallback
+// Simple fallback service that generates responses without requiring external models
 
 // Types
 type AudienceType = 'ethiker' | 'pragmatiker' | 'akademiker' | 'aktivisten' | 'technologen';
 
-// Audience-specific prompts
-const audiencePrompts: Record<string, string> = {
-  ethiker: "You are a philosophical ethicist. Respond to this thought with ethical considerations, moral principles, and references to philosophical frameworks. Focus on values, dignity, and ethical implications: ",
-  pragmatiker: "You are a practical problem-solver. Respond to this thought with concrete solutions, actionable steps, and realistic considerations. Focus on efficiency, utility, and tangible outcomes: ",
-  akademiker: "You are an academic researcher. Respond to this thought with theoretical analysis, references to research, and methodological considerations. Use academic language and cite fictional studies: ",
-  aktivisten: "You are a passionate activist. Respond to this thought with calls to action, community-focused perspectives, and social justice frameworks. Be inspiring and engaging: ",
-  technologen: "You are a technology specialist. Respond to this thought with systems thinking, technical solutions, and innovation frameworks. Use precise technical language and focus on optimization: "
+// Audience-specific response templates
+const audienceResponses: Record<string, (thought: string) => string> = {
+  ethiker: (thought: string) => `From an ethical perspective, your thought "${thought}" raises important questions about values and principles. Consider how this impacts human dignity and what philosophical frameworks might help us understand the ethical implications.`,
+  
+  pragmatiker: (thought: string) => `Looking at "${thought}" practically, we should focus on actionable solutions. Here are some tangible steps to address this situation, focusing on efficiency and real-world outcomes.`,
+  
+  akademiker: (thought: string) => `The statement "${thought}" can be analyzed through multiple theoretical frameworks. Recent studies suggest that this phenomenon correlates with societal trends in ways that merit further investigation.`,
+  
+  aktivisten: (thought: string) => `"${thought}" highlights a critical issue requiring community action! This isn't just an individual concern but a collective challenge that demands our voices be heard. Join the movement to address this important matter!`,
+  
+  technologen: (thought: string) => `Analyzing "${thought}" from a technical perspective reveals opportunities for system optimization. By implementing smart algorithms and leveraging digital infrastructure, we can develop an efficient solution architecture.`
 };
 
-// Loading state
-let isModelLoading = false;
-let generationPipeline: any = null;
+// More detailed responses for chat functionality
+const chatResponses: string[] = [
+  "That's an interesting perspective. Have you considered looking at it from a different angle?",
+  "I understand your point. This reminds me of similar situations where creative thinking led to innovative solutions.",
+  "Your thoughts touch on several important aspects of this topic. Perhaps we could explore the underlying principles further?",
+  "That's a thoughtful observation. The interplay between different factors here creates a fascinating dynamic.",
+  "I see where you're coming from. What if we approached this from a more holistic perspective?",
+  "This is a complex topic with many nuances. I appreciate your willingness to engage with these ideas.",
+  "You raise some excellent points. The ethical dimensions here are particularly worth considering.",
+  "There's a lot to unpack in what you're saying. The systemic aspects seem especially relevant.",
+  "Your analysis shows depth of thought. Have you considered how this might evolve over time?",
+  "That's a valuable contribution to the discussion. The practical implications are particularly significant."
+];
 
 /**
- * Initializes the WebLLM model for text generation
- */
-export async function initializeWebLLM() {
-  if (generationPipeline !== null) return generationPipeline;
-  if (isModelLoading) return null;
-  
-  isModelLoading = true;
-  
-  try {
-    console.log("Initializing WebLLM with model:", TEXT_GENERATION_MODEL);
-    
-    // Try to use WebGPU if available, fall back to WASM
-    try {
-      generationPipeline = await pipeline(
-        'text-generation',
-        TEXT_GENERATION_MODEL,
-        { device: 'webgpu' }
-      );
-      console.log("WebLLM initialized with WebGPU");
-    } catch (error) {
-      console.warn("WebGPU not available, falling back to WASM", error);
-      generationPipeline = await pipeline(
-        'text-generation',
-        FALLBACK_MODEL,
-        { device: 'wasm' }
-      );
-      console.log("WebLLM initialized with WASM");
-    }
-    
-    isModelLoading = false;
-    return generationPipeline;
-  } catch (error) {
-    console.error("Failed to initialize WebLLM:", error);
-    isModelLoading = false;
-    throw error;
-  }
-}
-
-/**
- * Generates a response based on the input text and audience type
+ * Generates a chat response based on user input
  */
 export async function generateResponse(input: string, audience: AudienceType): Promise<string> {
-  try {
-    const generator = await initializeWebLLM();
-    if (!generator) {
-      return "Model is still loading. Please try again in a moment.";
-    }
-    
-    const prompt = audiencePrompts[audience] || "Respond to this thought: ";
-    const fullPrompt = `${prompt}${input}`;
-
-    console.log("Generating response for prompt:", fullPrompt);
-    
-    const result = await generator(fullPrompt, {
-      max_new_tokens: 100,
-      temperature: 0.7,
-      repetition_penalty: 1.2,
-      top_p: 0.95,
-    });
-    
-    let response = result[0].generated_text;
-    
-    // Clean up the response to extract just the generated part
-    response = response.replace(fullPrompt, '').trim();
-    
-    console.log("Generated response:", response);
-    return response;
-  } catch (error) {
-    console.error("Error generating response:", error);
-    return "I encountered an error while processing your request. Please try again later.";
+  // Pick a random response from the array and customize it
+  const randomIndex = Math.floor(Math.random() * chatResponses.length);
+  const baseResponse = chatResponses[randomIndex];
+  
+  // Add audience-specific flair
+  let audiencePrefix = "";
+  switch(audience) {
+    case "ethiker":
+      audiencePrefix = "From an ethical standpoint, ";
+      break;
+    case "pragmatiker":
+      audiencePrefix = "Practically speaking, ";
+      break;
+    case "akademiker":
+      audiencePrefix = "Academic research suggests that ";
+      break;
+    case "aktivisten":
+      audiencePrefix = "As advocates for change, we should recognize that ";
+      break;
+    case "technologen":
+      audiencePrefix = "From a technical perspective, ";
+      break;
+    default:
+      audiencePrefix = "";
   }
+  
+  // Return combined response
+  return `${audiencePrefix}${baseResponse}`;
 }
 
 /**
- * Transforms a thought according to the specified audience perspective using the WebLLM
+ * Transforms a thought according to the specified audience perspective
  */
 export async function transformThoughtWithLLM(thought: string, audience: AudienceType): Promise<string> {
-  // For transformation, we use a more specific prompt
-  const audienceSpecificPrompts: Record<string, string> = {
-    ethiker: `Transform the following thought from an ethical perspective. Focus on moral implications, philosophical frameworks, and values-based reasoning: "${thought}"`,
-    pragmatiker: `Transform the following thought from a pragmatic perspective. Focus on practical applications, solutions, and tangible outcomes: "${thought}"`,
-    akademiker: `Transform the following thought from an academic perspective. Use scholarly language, cite fictional research, and maintain methodological rigor: "${thought}"`,
-    aktivisten: `Transform the following thought from an activist perspective. Include calls to action, community empowerment, and social justice frameworks: "${thought}"`,
-    technologen: `Transform the following thought from a technological perspective. Focus on systems thinking, innovation frameworks, and technical solutions: "${thought}"`
-  };
-  
-  try {
-    const generator = await initializeWebLLM();
-    if (!generator) {
-      return "Model is still loading. Please try again in a moment.";
-    }
-    
-    const prompt = audienceSpecificPrompts[audience] || `Transform this thought for a general audience: "${thought}"`;
-    
-    const result = await generator(prompt, {
-      max_new_tokens: 150,
-      temperature: 0.8,
-      repetition_penalty: 1.1,
-      top_p: 0.92,
-    });
-    
-    let response = result[0].generated_text;
-    response = response.replace(prompt, '').trim();
-    
-    return response;
-  } catch (error) {
-    console.error("Error transforming thought:", error);
-    return `Failed to transform thought. Using fallback transformation for "${thought}" with audience ${audience}.`;
+  // Check if we have a template for this audience
+  if (audienceResponses[audience]) {
+    return audienceResponses[audience](thought);
   }
+  
+  // Fallback for unknown audience
+  return `Your thought "${thought}" offers interesting perspectives that can be viewed from multiple angles depending on your audience and goals.`;
 }
 
-// Check if WebGPU is available
+/**
+ * Simplified mock check for WebGPU support - always returns not supported
+ * since we're not using WebGPU anymore
+ */
 export async function checkWebGPUSupport(): Promise<{supported: boolean, message: string}> {
-  // Fix the navigator.gpu TypeScript error by using the 'any' type
-  const nav = navigator as any;
-  
-  if (!nav.gpu) {
-    return {
-      supported: false,
-      message: "WebGPU is not supported in your browser. Using WASM fallback (slower)."
-    };
-  }
-  
-  try {
-    const adapter = await nav.gpu.requestAdapter();
-    if (!adapter) {
-      return {
-        supported: false,
-        message: "WebGPU adapter not available. Using WASM fallback (slower)."
-      };
-    }
-    return {
-      supported: true,
-      message: "WebGPU is supported in your browser. Optimal performance enabled."
-    };
-  } catch (error) {
-    return {
-      supported: false,
-      message: "Error checking WebGPU support. Using WASM fallback (slower)."
-    };
-  }
+  return {
+    supported: false,
+    message: "Using simplified response generation (no AI model required)."
+  };
+}
+
+/**
+ * Mock function to maintain API compatibility
+ */
+export async function initializeWebLLM() {
+  return null;
 }

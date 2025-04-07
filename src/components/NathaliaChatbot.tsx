@@ -3,10 +3,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send, Bot, User, AlertTriangle } from "lucide-react";
+import { MessageSquare, Send, Bot, User, Info } from "lucide-react";
 import { transformThought } from '@/lib/transformationService';
 import { useToast } from "@/components/ui/use-toast";
-import { generateResponse, initializeWebLLM, checkWebGPUSupport } from '@/lib/webLLMService';
+import { generateResponse } from '@/lib/webLLMService';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface Message {
@@ -21,64 +21,17 @@ const NathaliaChatbot: React.FC = () => {
       id: '1',
       role: 'assistant',
       content: 'Hello! I am Nathalia, your thought harmonization assistant. How can I help you today?'
+    },
+    {
+      id: '2',
+      role: 'system',
+      content: 'Using simplified response generation (no AI model required).'
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [modelStatus, setModelStatus] = useState<{loading: boolean, error: string | null}>({
-    loading: true,
-    error: null
-  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-
-  // Initialize WebLLM when component mounts
-  useEffect(() => {
-    async function loadModel() {
-      setModelStatus({loading: true, error: null});
-      
-      try {
-        // Check WebGPU support
-        const gpuSupport = await checkWebGPUSupport();
-        if (!gpuSupport.supported) {
-          // Add a system message about WebGPU support
-          setMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            role: 'system',
-            content: gpuSupport.message
-          }]);
-        }
-        
-        // Initialize the model
-        await initializeWebLLM();
-        setModelStatus({loading: false, error: null});
-        
-        // Add a system message that the model is ready
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          role: 'system',
-          content: 'The AI model is loaded and ready. This is a lightweight model running in your browser.'
-        }]);
-      } catch (error) {
-        console.error('Error loading WebLLM model:', error);
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        
-        setModelStatus({
-          loading: false, 
-          error: 'Failed to load the AI model. Falling back to simulated responses.'
-        });
-        
-        // Add error message
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          role: 'system',
-          content: `Error loading AI model: ${errorMessage}. Using fallback responses instead.`
-        }]);
-      }
-    }
-    
-    loadModel();
-  }, []);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
@@ -100,16 +53,8 @@ const NathaliaChatbot: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      let response;
-      
-      // Check if model is available, otherwise use a fallback
-      if (modelStatus.error) {
-        // Use fallback responses if model failed to load
-        response = `I'm currently running in fallback mode. In response to "${inputValue}", I would normally provide a thoughtful reply about ${getRandomTopic()}.`;
-      } else {
-        // Generate response using WebLLM
-        response = await generateResponse(inputValue, 'ethiker');
-      }
+      // Generate response using our pattern-based approach
+      const response = await generateResponse(inputValue, 'ethiker');
       
       // Add assistant response
       setTimeout(() => {
@@ -134,17 +79,6 @@ const NathaliaChatbot: React.FC = () => {
     }
   };
 
-  const getRandomTopic = () => {
-    const topics = [
-      'ethics and philosophical considerations',
-      'practical solutions to everyday problems',
-      'academic research and analysis',
-      'social activism and community engagement',
-      'technology and systems optimization'
-    ];
-    return topics[Math.floor(Math.random() * topics.length)];
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -158,18 +92,10 @@ const NathaliaChatbot: React.FC = () => {
         <CardTitle className="flex items-center gap-2 text-xl">
           <Bot className="w-5 h-5 text-harmony-purple" />
           <span>Nathalia Chatbot</span>
-          {modelStatus.loading && (
-            <div className="ml-auto text-xs flex items-center gap-1 text-amber-500">
-              <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></div>
-              <span>Loading Model...</span>
-            </div>
-          )}
-          {modelStatus.error && (
-            <div className="ml-auto text-xs flex items-center gap-1 text-red-500">
-              <AlertTriangle className="w-3 h-3" />
-              <span>Using Fallback Mode</span>
-            </div>
-          )}
+          <div className="ml-auto text-xs flex items-center gap-1 text-blue-500">
+            <Info className="w-3 h-3" />
+            <span>Pattern-Based Responses</span>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col h-full p-0">
@@ -190,7 +116,7 @@ const NathaliaChatbot: React.FC = () => {
                   message.role === 'user' 
                     ? 'bg-primary text-primary-foreground ml-auto'
                     : message.role === 'system'
-                    ? 'bg-amber-100 text-amber-800 text-xs px-2 py-1'
+                    ? 'bg-blue-100 text-blue-800 text-xs px-2 py-1'
                     : 'bg-muted'
                 }`}
               >
@@ -244,13 +170,13 @@ const NathaliaChatbot: React.FC = () => {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Share your thoughts with Nathalia..."
-              disabled={isProcessing || modelStatus.loading}
+              disabled={isProcessing}
               className="flex-1"
             />
             <Button 
               type="submit" 
               size="icon" 
-              disabled={isProcessing || modelStatus.loading}
+              disabled={isProcessing}
               className="bg-harmony-purple hover:bg-harmony-purple/90"
             >
               <Send className="h-4 w-4" />
